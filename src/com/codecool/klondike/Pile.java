@@ -39,9 +39,9 @@ public class Pile extends Pane {
         return cards;
     }
 
-    public int numOfCards() {
-        //TODO
-        return 1;
+    public int numOfCards(String name) {
+        //DONE
+        return this.cards.indexOf(name);
     }
 
     public boolean isEmpty() {
@@ -49,7 +49,8 @@ public class Pile extends Pane {
     }
 
     public void clear() {
-        //TODO
+        //DONE
+        this.cards.clear();
     }
 
     public void addCard(Card card) {
