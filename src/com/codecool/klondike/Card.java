@@ -77,17 +77,23 @@ public class Card extends ImageView {
         return "The " + "Rank" + rank + " of " + "Suit" + suit;
     }
 
+    
     public static boolean isOppositeColor(Card card1, Card card2) {
-        String[] colorsCards = {"hearts", "spades", "diamonds", "clubs"};
-        
-        for(int i=0; i<colorsCards.length; i++){
-            if(i == 1 || i==2 || i==4){
-                return true;
-            }else{
-                return false;
-            }
+        if (card1.suit == 1 && card2.suit == 2){
+            return false;
         }
-        return null;
+        else if (card2.suit ==2 && card1.suit == 1){
+            return false;
+        }
+        else if (card2.suit ==3 && card1.suit == 4){
+            return false;
+        }
+        else if (card1.suit ==3 && card2.suit == 4){
+            return false;
+        }
+        else{
+            return true;
+        }
     }
 
     public static boolean isSameSuit(Card card1, Card card2) {
