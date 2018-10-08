@@ -77,22 +77,18 @@ public class Card extends ImageView {
         return "The " + "Rank" + rank + " of " + "Suit" + suit;
     }
 
-    
     public static boolean isOppositeColor(Card card1, Card card2) {
-        if (card1.suit == 1 && card2.suit == 2){
-            return false;
-        }
-        else if (card2.suit ==2 && card1.suit == 1){
-            return false;
-        }
-        else if (card2.suit ==3 && card1.suit == 4){
-            return false;
-        }
-        else if (card1.suit ==3 && card2.suit == 4){
-            return false;
-        }
-        else{
+        if (((card1.getSuit() == 1 && card2.getSuit() == 3)
+                || (card1.getSuit() == 1 && card2.getSuit() == 4)
+                || (card1.getSuit() == 2 && card2.getSuit() == 3)
+                || (card1.getSuit() == 2 && card2.getSuit() == 4)
+                || (card1.getSuit() == 3 && card2.getSuit() == 1)
+                || (card1.getSuit() == 3 && card2.getSuit() == 2)
+                || (card1.getSuit() == 4 && card2.getSuit() == 1)
+                || (card1.getSuit() == 4 && card2.getSuit() == 2))) {
             return true;
+        } else {
+            return false;
         }
     }
 
