@@ -98,12 +98,32 @@ public class Card extends ImageView {
 
     public static List<Card> createNewDeck() {
         List<Card> result = new ArrayList<>();
-        for (int suit = 1; suit < 5; suit++) {
-            for (int rank = 1; rank < 14; rank++) {
-                result.add(new Card(suit, rank, true));
-            }
+        Random rander = new Random();
+        boolean[][] tableOfUniqueCards = new boolean[4][13];
+        int suit;
+        int rank;
+        boolean isTableOfCardsFull = false;
+
+        while(isTableOfCardsFull == false) {
+        suit = rander.nextInt(4);
+        rank = rander.nextInt(13);
+        if (tableOfUniqueCards[suit][rank] == false) {
+            tableOfUniqueCards[suit][rank] = true;
+            result.add(new Card(suit + 1, rank + 1, true));
+        }
+        isTableOfCardsFull = isAllCards(tableOfUniqueCards);
         }
         return result;
+    }
+    private static boolean isAllCards(boolean[][] tab) {
+        for (boolean[] row : tab) {
+            for (boolean column : row) {
+                if (column == false) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     public static void loadCardImages() {
