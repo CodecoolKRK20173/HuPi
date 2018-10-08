@@ -44,6 +44,32 @@ public class Game extends Pane {
         }
     };
 
+    private void createRestartButton() {
+        Image image = new Image(getClass().getResourceAsStream("/table/res.png"));
+
+        Button rest = new Button();
+        rest.setGraphic(new ImageView(image));
+        
+        rest.setLayoutX(10);
+        rest.setLayoutY(60);
+        getChildren().add(rest);;
+        rest.setOnAction(this::handleButtonAction);
+
+        
+    }
+
+    private void handleButtonAction(ActionEvent event) {
+
+        clearAllPiles();
+        deck = Card.createNewDeck();
+        initPiles();
+        dealCards();
+        createRestartButton();
+        createCheatButton();
+        
+    }
+
+
     private EventHandler<MouseEvent> stockReverseCardsHandler = e -> {
         refillStockFromDiscard();
     };
