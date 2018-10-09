@@ -12,6 +12,10 @@ import javafx.scene.layout.BackgroundPosition;
 import javafx.scene.layout.BackgroundRepeat;
 import javafx.scene.layout.BackgroundSize;
 import javafx.scene.layout.Pane;
+import javafx.collections.ObservableList;
+import javafx.scene.image.ImageView;
+import javafx.scene.control.Button;
+import javafx.event.ActionEvent;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -60,12 +64,11 @@ public class Game extends Pane {
 
     private void handleButtonAction(ActionEvent event) {
 
-        clearAllPiles();
+        // clearAllPiles();
         deck = Card.createNewDeck();
         initPiles();
         dealCards();
         createRestartButton();
-        createCheatButton();
         
     }
 
@@ -207,16 +210,37 @@ public class Game extends Pane {
             getChildren().add(tableauPile);
         }
     }
+    private void flipLastCardsInTableauPiles() {
+        for (Pile pile : tableauPiles) {
+            if (!pile.isEmpty()) {
+                int pileSize = pile.getCards().size();
+                if (pile.getCards().get(pileSize - 1).isFaceDown() == true) {
+                    pile.getCards().get(pileSize - 1).flip();
+                }
+            }            
+        }
+    }
+    
+
 
     public void dealCards() {
         Iterator<Card> deckIterator = deck.iterator();
-        //TODO
-        deckIterator.forEachRemaining(card -> {
+
+        for (int i = 0; i < 7; i++) {
+            for (int j = 0; j <= i; j++) {
+                Card card = deckIterator.next();
+                tableauPiles.get(i).addCard(card);
+                addMouseEventHandlers(card);
+                getChildren().add(card);
+                deckIterator.remove();
+            }
+        }
+        flipLastCardsInTableauPiles();
+        deckIterator.forEachRemaining(card -> {       
             stockPile.addCard(card);
             addMouseEventHandlers(card);
             getChildren().add(card);
         });
-
     }
 
     public void setTableBackground(Image tableBackground) {
