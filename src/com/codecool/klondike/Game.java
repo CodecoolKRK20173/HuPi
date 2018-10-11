@@ -48,36 +48,25 @@ public class Game extends Pane {
         }
     };
 
-    private void createRestartButton() {
-        Image image = new Image(getClass().getResourceAsStream("/table/res.png"));
-
-        Button rest = new Button();
-        rest.setGraphic(new ImageView(image));
-        
-        rest.setLayoutX(10);
-        rest.setLayoutY(60);
-        getChildren().add(rest);;
-        rest.setOnAction(this::handleButtonAction);
-
-        
-    }
-
     private void handleButtonAction(ActionEvent event) {
 
         // clearAllPiles();
         deck = Card.createNewDeck();
         initPiles();
         dealCards();
-        createRestartButton();
+        // createRestartButton();
         
     }
 
 
     private EventHandler<MouseEvent> stockReverseCardsHandler = e -> {
-        refillStockFromDiscard();
-    };
+        if (stockPile.isEmpty()) {
+           refillStockFromDiscard();
+       }
+   };
 
     private EventHandler<MouseEvent> onMousePressedHandler = e -> {
+        flipLastCardsInTableauPiles();
         dragStartX = e.getSceneX();
         dragStartY = e.getSceneY();
     };
@@ -91,7 +80,7 @@ public class Game extends Pane {
         double offsetY = e.getSceneY() - dragStartY;
 
         draggedCards.clear();
-        draggedCards.add(card);
+        draggedCards.add(card);        
 
         card.getDropShadow().setRadius(20);
         card.getDropShadow().setOffsetX(10);
@@ -100,21 +89,40 @@ public class Game extends Pane {
         card.toFront();
         card.setTranslateX(offsetX);
         card.setTranslateY(offsetY);
+
+        if (activePile.getPileType() == Pile.PileType.TABLEAU) {
+            ObservableList<Card> activePileList = activePile.getCards();
+            int indexOfDraggedCard = activePileList.indexOf(card);
+            for (int i = indexOfDraggedCard + 1; i < activePileList.size(); i++) {
+                draggedCards.add(activePileList.get(i));
+
+                activePileList.get(i).getDropShadow().setRadius(20);
+                activePileList.get(i).getDropShadow().setOffsetX(10);
+                activePileList.get(i).getDropShadow().setOffsetY(10);
+
+                activePileList.get(i).toFront();
+                activePileList.get(i).setTranslateX(offsetX);
+                activePileList.get(i).setTranslateY(offsetY);
+            }              
+        }        
     };
 
     private EventHandler<MouseEvent> onMouseReleasedHandler = e -> {
+        
         if (draggedCards.isEmpty())
             return;
         Card card = (Card) e.getSource();
         Pile pile = getValidIntersectingPile(card, tableauPiles);
-        //TODO
+        Pile pile2 = getValidIntersectingPile(card, foundationPiles);      
         if (pile != null) {
             handleValidMove(card, pile);
+        } else if (pile2 != null) {
+            handleValidMove(card, pile2);
         } else {
             draggedCards.forEach(MouseUtil::slideBack);
-            draggedCards.clear();//nie wywala bledow
-        }
-    };
+            draggedCards.clear();
+        }        
+    };  
 
     public boolean isGameWon() {
         if(this.foundationPiles.size() == 0){
