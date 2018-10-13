@@ -18,8 +18,13 @@ import javafx.scene.control.Button;
 import javafx.event.ActionEvent;
 
 import java.util.ArrayList;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import javafx.util.Duration;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 
 public class Game extends Pane {
 
@@ -37,6 +42,12 @@ public class Game extends Pane {
     private static double FOUNDATION_GAP = 0;
     private static double TABLEAU_GAP = 30;
 
+    boolean isGameWon = false;
+    private boolean cheat = false;
+    ScheduledExecutorService service;
+    int playTime = 0;
+
+
 
     private EventHandler<MouseEvent> onMouseClickedHandler = e -> {
         Card card = (Card) e.getSource();
@@ -48,16 +59,63 @@ public class Game extends Pane {
         }
     };
 
-    private void handleButtonAction(ActionEvent event) {
+    private void createRestartButton() {
+        Image image = new Image(getClass().getResourceAsStream("/table/res.png"));
 
-        // clearAllPiles();
-        deck = Card.createNewDeck();
-        initPiles();
-        dealCards();
-        // createRestartButton();
+        Button rest = new Button();
+        rest.setGraphic(new ImageView(image));
+        
+        rest.setLayoutX(10);
+        rest.setLayoutY(60);
+        getChildren().add(rest);;
+        rest.setOnAction(this::handleButtonAction);
+
         
     }
 
+    private void createCheatButton() {
+        
+        Image image = new Image(getClass().getResourceAsStream("/table/cheat.png"));
+        Button cheat = new Button();
+        cheat.setGraphic(new ImageView(image));
+        cheat.setLayoutX(10);
+        cheat.setLayoutY(100);
+        getChildren().add(cheat);;
+        cheat.setOnAction(this::handleButtonCheatAction);
+
+
+    }
+
+    private void handleButtonAction(ActionEvent event) {
+        clearAllPiles();
+        deck = Card.createNewDeck();
+        initPiles();
+        dealCards();
+        createRestartButton();
+        createCheatButton();      
+    }
+
+    private void handleButtonCheatAction(ActionEvent event) {
+        if (cheat == false) {
+            this.cheat = true;
+        }
+        else {
+            this.cheat = false;
+        }
+        
+        
+    }
+
+    private void clearAllPiles() {
+        getChildren().clear();
+        playTime = 0;
+        for (int i = 0; i < 4; i++) {
+            foundationPiles.get(i).clear();
+        }
+        for (int i = 0; i < 7; i++) {
+            tableauPiles.get(i).clear();
+        }
+    }
 
     private EventHandler<MouseEvent> stockReverseCardsHandler = e -> {
         if (stockPile.isEmpty()) {
@@ -124,17 +182,54 @@ public class Game extends Pane {
         }        
     };  
 
-    public boolean isGameWon() {
-        if(this.foundationPiles.size() == 0){
-            return true;
-        }
-        return false;
-    }
+    public boolean isGameWon() {        
+        
+        int cardsOnFoundationPilesCounter = 0;
 
-    public Game() {
+        for (Pile foundationPile : foundationPiles) {
+            if (!foundationPile.isEmpty()) {
+                for (Card card : foundationPile.getCards()) {
+                    cardsOnFoundationPilesCounter++;
+                }
+            }
+        }
+        if (cardsOnFoundationPilesCounter == 52) {
+            return true;
+        } else {
+            cardsOnFoundationPilesCounter = 0;
+            return false;
+        }
+    }    
+
+    public Game() {    
+            
         deck = Card.createNewDeck();
         initPiles();
         dealCards();
+
+        Runnable runnable = new Runnable() {
+            public void run() {
+                playTime++;
+                if(isGameWon()) {
+                    int playTimeMinutes = playTime / 60;
+                    int playTimeSeconds = playTime % 60;
+                    System.out.format("%s %d:%d", 
+                            "You win the game! You have played ",
+                             playTimeMinutes,
+                             playTimeSeconds);
+                    scatterTheCards();
+                    service.shutdownNow();
+                }
+            }
+        };          
+        ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
+        service.scheduleAtFixedRate(runnable, 0, 1, TimeUnit.SECONDS);        
+        createRestartButton();
+        createCheatButton();
+    }
+
+    public Game(int number) {
+        
     }
 
     public void addMouseEventHandlers(Card card) {
@@ -145,14 +240,62 @@ public class Game extends Pane {
     }
 
     public void refillStockFromDiscard() {
-        //TODO
+        ArrayList<Card> iterDiscardPile = new ArrayList<Card>();
+        for (Card sCard : discardPile.getCards()) {
+            iterDiscardPile.add(sCard);
+        }
+
+        for (Card singleCard : iterDiscardPile) {
+            singleCard.flip();
+            singleCard.moveToPile(stockPile);
+        }
+        discardPile.getCards().clear();
         System.out.println("Stock refilled from discard pile.");
     }
 
     public boolean isMoveValid(Card card, Pile destPile) {
-        //TODO
+            
+        if (destPile.getPileType().equals(Pile.PileType.FOUNDATION)) {
+            if (!cheat) {
+                if (destPile.isEmpty() && card.getRank() == 1) {
+                    return true;
+                } else if (destPile.isEmpty() && !(card.getRank() == 1)) {
+                    return false;
+                } else if (!destPile.isEmpty() && (card.getRank() == 1)) {
+                    return false;
+                } else if (!destPile.isEmpty() && !(card.getRank() == 1)) {
+                    Card destFoundationPileTopCard = destPile.getCards().get(destPile.getCards().size() - 1);
+                    if (card.getRank() - 1 == ((destFoundationPileTopCard.getRank()))
+                        && Card.isSameSuit(card, destFoundationPileTopCard)) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+            } else {
+                return true;
+            }            
+        } else if (destPile.getPileType().equals(Pile.PileType.TABLEAU)) {
+            if (destPile.isEmpty() && card.getRank() == 13) {
+                return true;
+            } else if (destPile.isEmpty() && !(card.getRank() == 13)) {
+                return false;
+            } else if (!destPile.isEmpty() && !(card.getRank() == 13 && (card.getRank() == 1))) {
+                Card destTableauPileTopCard = destPile.getCards().get(destPile.getCards().size() - 1);              
+                if (card.isFaceDown() == false 
+                        && card.getRank() + 1 == ((destTableauPileTopCard.getRank()))
+                        && Card.isOppositeColor(card, destTableauPileTopCard)) {                
+                    return true;
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        }
         return true;
     }
+
     private Pile getValidIntersectingPile(Card card, List<Pile> piles) {
         Pile result = null;
         for (Pile pile : piles) {
