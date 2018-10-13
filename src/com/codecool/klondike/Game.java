@@ -47,8 +47,6 @@ public class Game extends Pane {
     ScheduledExecutorService service;
     int playTime = 0;
 
-
-
     private EventHandler<MouseEvent> onMouseClickedHandler = e -> {
         Card card = (Card) e.getSource();
         if (card.getContainingPile().getPileType() == Pile.PileType.STOCK) {
@@ -68,13 +66,10 @@ public class Game extends Pane {
         rest.setLayoutX(10);
         rest.setLayoutY(60);
         getChildren().add(rest);;
-        rest.setOnAction(this::handleButtonAction);
-
-        
+        rest.setOnAction(this::handleButtonAction);    
     }
 
     private void createCheatButton() {
-        
         Image image = new Image(getClass().getResourceAsStream("/table/cheat.png"));
         Button cheat = new Button();
         cheat.setGraphic(new ImageView(image));
@@ -82,8 +77,6 @@ public class Game extends Pane {
         cheat.setLayoutY(100);
         getChildren().add(cheat);;
         cheat.setOnAction(this::handleButtonCheatAction);
-
-
     }
 
     private void handleButtonAction(ActionEvent event) {
@@ -101,9 +94,7 @@ public class Game extends Pane {
         }
         else {
             this.cheat = false;
-        }
-        
-        
+        }     
     }
 
     private void clearAllPiles() {
@@ -165,8 +156,7 @@ public class Game extends Pane {
         }        
     };
 
-    private EventHandler<MouseEvent> onMouseReleasedHandler = e -> {
-        
+    private EventHandler<MouseEvent> onMouseReleasedHandler = e -> {    
         if (draggedCards.isEmpty())
             return;
         Card card = (Card) e.getSource();
@@ -183,7 +173,6 @@ public class Game extends Pane {
     };  
 
     public boolean isGameWon() {        
-        
         int cardsOnFoundationPilesCounter = 0;
 
         for (Pile foundationPile : foundationPiles) {
@@ -202,7 +191,6 @@ public class Game extends Pane {
     }    
 
     public Game() {    
-            
         deck = Card.createNewDeck();
         initPiles();
         dealCards();
@@ -244,7 +232,6 @@ public class Game extends Pane {
         for (Card sCard : discardPile.getCards()) {
             iterDiscardPile.add(sCard);
         }
-
         for (Card singleCard : iterDiscardPile) {
             singleCard.flip();
             singleCard.moveToPile(stockPile);
@@ -254,7 +241,6 @@ public class Game extends Pane {
     }
 
     public boolean isMoveValid(Card card, Pile destPile) {
-            
         if (destPile.getPileType().equals(Pile.PileType.FOUNDATION)) {
             if (!cheat) {
                 if (destPile.isEmpty() && card.getRank() == 1) {
@@ -399,5 +385,4 @@ public class Game extends Pane {
                 BackgroundRepeat.REPEAT, BackgroundRepeat.REPEAT,
                 BackgroundPosition.CENTER, BackgroundSize.DEFAULT)));
     }
-
 }

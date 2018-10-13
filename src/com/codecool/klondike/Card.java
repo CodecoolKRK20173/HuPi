@@ -152,5 +152,4 @@ public class Card extends ImageView {
             }
         }
     }
-
 }
