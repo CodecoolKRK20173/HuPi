@@ -57,56 +57,6 @@ public class Game extends Pane {
         }
     };
 
-    private void createRestartButton() {
-        Image image = new Image(getClass().getResourceAsStream("/table/res.png"));
-
-        Button rest = new Button();
-        rest.setGraphic(new ImageView(image));
-        
-        rest.setLayoutX(10);
-        rest.setLayoutY(60);
-        getChildren().add(rest);;
-        rest.setOnAction(this::handleButtonAction);    
-    }
-
-    private void createCheatButton() {
-        Image image = new Image(getClass().getResourceAsStream("/table/cheat.png"));
-        Button cheat = new Button();
-        cheat.setGraphic(new ImageView(image));
-        cheat.setLayoutX(10);
-        cheat.setLayoutY(100);
-        getChildren().add(cheat);;
-        cheat.setOnAction(this::handleButtonCheatAction);
-    }
-
-    private void handleButtonAction(ActionEvent event) {
-        clearAllPiles();
-        deck = Card.createNewDeck();
-        initPiles();
-        dealCards();
-        createRestartButton();
-        createCheatButton();      
-    }
-
-    private void handleButtonCheatAction(ActionEvent event) {
-        if (cheat == false) {
-            this.cheat = true;
-        }
-        else {
-            this.cheat = false;
-        }     
-    }
-
-    private void clearAllPiles() {
-        getChildren().clear();
-        playTime = 0;
-        for (int i = 0; i < 4; i++) {
-            foundationPiles.get(i).clear();
-        }
-        for (int i = 0; i < 7; i++) {
-            tableauPiles.get(i).clear();
-        }
-    }
 
     private EventHandler<MouseEvent> stockReverseCardsHandler = e -> {
         if (stockPile.isEmpty()) {
@@ -205,15 +155,12 @@ public class Game extends Pane {
                             "You win the game! You have played ",
                              playTimeMinutes,
                              playTimeSeconds);
-                    scatterTheCards();
                     service.shutdownNow();
                 }
             }
         };          
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         service.scheduleAtFixedRate(runnable, 0, 1, TimeUnit.SECONDS);        
-        createRestartButton();
-        createCheatButton();
     }
 
     public Game(int number) {
